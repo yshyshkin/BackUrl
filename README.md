@@ -9,9 +9,9 @@ Redirect will be performed after processing of controller action.
 If there is no redirect parameter in URL, redirect will not be performed.
 Default parameter name is "backUrl".
 
-Note: Annotation for controller action has higher priority than annotation for controller class.
+*Note:* Annotation for controller action has higher priority than annotation for controller class.
 
-#### Controller Method Annotation
+#### Controller Action Annotation
 
 This annotation will automatically redirect user to URL specified in parameter "redirect"
 after processing of listAction controller action.
