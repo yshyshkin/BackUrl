@@ -16,32 +16,36 @@ Note: Annotation for controller action has higher priority than annotation for c
 This annotation will automatically redirect user to URL specified in parameter "redirect"
 after processing of listAction controller action.
 
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-    use YsTools\BackUrlBundle\Annotation\BackUrl;
+``` php
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use YsTools\BackUrlBundle\Annotation\BackUrl;
 
-    class BlogController extends Controller
+class BlogController extends Controller
+{
+    /**
+     * @BackUrl("redirect")
+     */
+    public function listAction()
     {
-        /**
-         * @BackUrl("redirect")
-         */
-        public function listAction()
-        {
-            ...
-        }
+        ...
     }
+}
+```
 
 #### Controller Class Annotation
 
 This annotation will automatically redirect user to URL specified in parameter "back_to"
 after processing of any controller action.
 
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-    use YsTools\BackUrlBundle\Annotation\BackUrl;
+``` php
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use YsTools\BackUrlBundle\Annotation\BackUrl;
 
-    /**
-     * @BackUrl("back_to")
-     */
-    class BlogController extends Controller
-    {
-        ...
-    }
+/**
+ * @BackUrl("back_to")
+ */
+class BlogController extends Controller
+{
+    ...
+}
+```
