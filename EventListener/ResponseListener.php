@@ -9,7 +9,7 @@ use YsTools\BackUrlBundle\Annotation\StorageInterface;
 class ResponseListener
 {
     /**
-     * @var string
+     * @var StorageInterface
      */
     protected $storage;
 
