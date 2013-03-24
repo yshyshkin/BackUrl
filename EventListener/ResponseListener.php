@@ -4,20 +4,21 @@ namespace YsTools\BackUrlBundle\EventListener;
 
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use YsTools\BackUrlBundle\Annotation\AnnotationInterface;
+use YsTools\BackUrlBundle\Annotation\StorageInterface;
 
 class ResponseListener
 {
     /**
      * @var string
      */
-    protected $storageName;
+    protected $storage;
 
     /**
-     * @param string $storageName
+     * @param StorageInterface $storage
      */
-    public function __construct($storageName)
+    public function __construct(StorageInterface $storage)
     {
-        $this->storageName = $storageName;
+        $this->storage = $storage;
     }
 
     /**
@@ -25,19 +26,12 @@ class ResponseListener
      */
     public function onKernelResponse(FilterResponseEvent $event)
     {
-        $request = $event->getRequest();
-        if (!$request->attributes->has($this->storageName)) {
-            return;
+        /** @var $annotation AnnotationInterface */
+        foreach ($this->storage->getAnnotations() as $annotation) {
+            $response = $annotation->process($event->getRequest(), $event->getResponse());
+            $event->setResponse($response);
         }
 
-        $annotationStorage = $request->attributes->get($this->storageName);
-        /** @var $annotation AnnotationInterface */
-        foreach ($annotationStorage as $annotation) {
-            if ($annotation instanceof AnnotationInterface) {
-                $response = $annotation->process($request, $event->getResponse());
-                $event->setResponse($response);
-            }
-        }
-        $request->attributes->remove($this->storageName);
+        $this->storage->clearAnnotations();
     }
 }

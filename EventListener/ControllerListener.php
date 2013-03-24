@@ -5,6 +5,7 @@ namespace YsTools\BackUrlBundle\EventListener;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Doctrine\Common\Annotations\Reader;
 use YsTools\BackUrlBundle\Annotation\AnnotationInterface;
+use YsTools\BackUrlBundle\Annotation\StorageInterface;
 
 class ControllerListener
 {
@@ -14,18 +15,18 @@ class ControllerListener
     protected $reader;
 
     /**
-     * @var string
+     * @var StorageInterface
      */
-    protected $storageName;
+    protected $storage;
 
     /**
      * @param Reader $reader
-     * @param string $storageName
+     * @param StorageInterface $storage
      */
-    public function __construct(Reader $reader, $storageName)
+    public function __construct(Reader $reader, StorageInterface $storage)
     {
-        $this->reader      = $reader;
-        $this->storageName = $storageName;
+        $this->reader  = $reader;
+        $this->storage = $storage;
     }
 
     /**
@@ -46,21 +47,10 @@ class ControllerListener
         $methodAnnotations = $this->getAnnotations($this->reader->getMethodAnnotations($method));
         $annotations       = array_merge($classAnnotations, $methodAnnotations);
 
-        // set annotation to request
-        if ($annotations) {
-            $request = $event->getRequest();
-
-            if (!$request->attributes->has($this->storageName)) {
-                $request->attributes->set($this->storageName, array());
-            }
-            $annotationStorage = $request->attributes->get($this->storageName);
-
-            /** @var $annotation AnnotationInterface */
-            foreach ($annotations as $annotation) {
-                $annotationStorage[$annotation->getCode()] = $annotation;
-            }
-
-            $request->attributes->set($this->storageName, $annotationStorage);
+        // save annotations in storage
+        /** @var $annotation AnnotationInterface */
+        foreach ($annotations as $annotation) {
+            $this->storage->addAnnotation($annotation);
         }
     }
 

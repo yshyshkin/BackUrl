@@ -11,6 +11,21 @@ Default parameter name is "backUrl".
 
 *Note:* Annotation for controller action has higher priority than annotation for controller class.
 
+#### Installation
+
+1. Add bundle name to "require" section in composer.json:
+```
+"ys-tools/back-url-bundle": "dev-master"
+```
+2. Update composer packages:
+```
+composer update
+```
+3. Register bundle in kernel (defaults - file app\AppKernel.php, method registerBundles):
+```
+new YsTools\BackUrlBundle\YsToolsBackUrlBundle(),
+```
+
 #### Controller Action Annotation
 
 This annotation will automatically redirect user to URL specified in parameter "redirect"
