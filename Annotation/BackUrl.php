@@ -28,7 +28,7 @@ class BackUrl implements AnnotationInterface
     /**
      * @param array $values
      */
-    public function __construct(array $values)
+    public function __construct(array $values = array())
     {
         if (isset($values['parameter'])) {
             $this->parameterName = $values['parameter'];
