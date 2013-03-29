@@ -98,15 +98,15 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
                 ),
             ),
             'method annotations' => array(
-                '$controllerAnnotations' => array($methodCodeOne),
-                '$methodAnnotations'     => array(),
+                '$controllerAnnotations' => array(),
+                '$methodAnnotations'     => array($methodCodeOne),
                 '$expectedAnnotations'   => array(
                     self::CODE_ONE => $methodCodeOne
                 ),
             ),
             'both annotations' => array(
-                '$controllerAnnotations' => array($controllerCodeOne, $controllerCodeTwo, $methodCodeOne),
-                '$methodAnnotations'     => array(),
+                '$controllerAnnotations' => array($controllerCodeOne, $controllerCodeTwo),
+                '$methodAnnotations'     => array($methodCodeOne),
                 '$expectedAnnotations'   => array( // merged data
                     self::CODE_TWO => $controllerCodeTwo,
                     self::CODE_ONE => $methodCodeOne
