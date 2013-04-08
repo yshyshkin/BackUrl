@@ -19,8 +19,17 @@ interface AnnotationInterface
     public function getCode();
 
     /**
-     * Process annotation
+     * Initialize annotation before controller action
      *
+     * @abstract
+     * @param Request $request
+     */
+    public function initialize(Request $request);
+
+    /**
+     * Process annotation after controller action
+     *
+     * @abstract
      * @param Request $request
      * @param Response $response
      * @return Response

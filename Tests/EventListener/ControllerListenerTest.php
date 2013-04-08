@@ -3,6 +3,7 @@
 namespace YsTools\BackUrlBundle\Tests\EventListener;
 
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Annotations\Reader;
 use YsTools\BackUrlBundle\Annotation\Storage;
 use YsTools\BackUrlBundle\EventListener\ControllerListener;
@@ -64,11 +65,14 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
             false,
             true,
             true,
-            array('getCode')
+            array('getCode', 'initialize')
         );
         $annotation->expects($this->any())
             ->method('getCode')
             ->will($this->returnValue($code));
+        $annotation->expects($this->once())
+            ->method('initialize')
+            ->with($this->isInstanceOf('Symfony\Component\HttpFoundation\Request'));
 
         return $annotation;
     }
@@ -81,8 +85,11 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
     public function onKernelControllerDataProvider()
     {
         $controllerCodeOne = $this->generateAnnotation(self::CODE_ONE);
-        $controllerCodeTwo = $this->generateAnnotation(self::CODE_TWO);
         $methodCodeOne     = $this->generateAnnotation(self::CODE_ONE);
+
+        $controllerBothCodeOne = $this->generateAnnotation(self::CODE_ONE);
+        $controllerBothCodeTwo = $this->generateAnnotation(self::CODE_TWO);
+        $methodBothCodeOne     = $this->generateAnnotation(self::CODE_ONE);
 
         return array(
             'no annotations' => array(
@@ -105,11 +112,11 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
                 ),
             ),
             'both annotations' => array(
-                '$controllerAnnotations' => array($controllerCodeOne, $controllerCodeTwo),
-                '$methodAnnotations'     => array($methodCodeOne),
+                '$controllerAnnotations' => array($controllerBothCodeOne, $controllerBothCodeTwo),
+                '$methodAnnotations'     => array($methodBothCodeOne),
                 '$expectedAnnotations'   => array( // merged data
-                    self::CODE_TWO => $controllerCodeTwo,
-                    self::CODE_ONE => $methodCodeOne
+                    self::CODE_TWO => $controllerBothCodeTwo,
+                    self::CODE_ONE => $methodBothCodeOne
                 ),
             ),
         );
@@ -150,9 +157,11 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
 
         $storage = new Storage();
 
+        $request = new Request();
+
         $event = $this->getMock(
             'Symfony\Component\HttpKernel\Event\FilterControllerEvent',
-            array('getController'),
+            array('getController', 'getRequest'),
             array(),
             '',
             false
@@ -160,6 +169,9 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
         $event->expects($this->once())
             ->method('getController')
             ->will($this->returnValue(array($controller, $method))); // fake controller
+        $event->expects($this->any())
+            ->method('getRequest')
+            ->will($this->returnValue($request));
 
         $controllerListener = new ControllerListener($reader, $storage);
         $controllerListener->onKernelController($event);

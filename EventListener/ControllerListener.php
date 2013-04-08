@@ -50,6 +50,7 @@ class ControllerListener
         // save annotations in storage
         /** @var $annotation AnnotationInterface */
         foreach ($annotations as $annotation) {
+            $annotation->initialize($event->getRequest());
             $this->storage->addAnnotation($annotation);
         }
     }
