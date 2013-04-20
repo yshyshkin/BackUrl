@@ -5,7 +5,7 @@ namespace YsTools\BackUrlBundle\Annotation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Back URL annotation configuration container
@@ -27,25 +27,25 @@ class BackUrl implements AnnotationInterface
     protected $parameterName = 'backUrl';
 
     /**
-     * Flag of force response replacing
-     *
-     * @var bool
-     */
-    protected $force = false;
-
-    /**
      * Flash bag usage flag
      *
      * @var bool
      */
-    protected $useFlashBag = false;
+    protected $useSession = false;
 
     /**
-     * Flash bag URL
+     * Back URL
      *
      * @var string
      */
-    protected $flashBagUrl;
+    protected $backUrl;
+
+    /**
+     * Whether to do redirect to back URL
+     *
+     * @var bool
+     */
+    protected static $isRedirect = false;
 
     /**
      * @param array $values
@@ -58,12 +58,8 @@ class BackUrl implements AnnotationInterface
             $this->parameterName = $values['value'];
         }
 
-        if (isset($values['force']) && $values['force']) {
-            $this->force = true;
-        }
-
-        if (isset($values['useFlashBag']) && $values['useFlashBag']) {
-            $this->useFlashBag = true;
+        if (isset($values['useSession']) && $values['useSession']) {
+            $this->useSession = true;
         }
     }
 
@@ -81,24 +77,34 @@ class BackUrl implements AnnotationInterface
      */
     public function initialize(Request $request)
     {
-        if ($this->useFlashBag) {
-            /** @var $session Session */
-            $session = $request->getSession();
-            $session->start();
-
+        if ($this->useSession) {
+            $session = $this->getSession($request);
             $backUrl = $request->get($this->parameterName);
 
-            // add URL to flash bag
-            if (!$session->getFlashBag()->has($this->parameterName) && $backUrl) {
-                $session->getFlashBag()->set($this->parameterName, $backUrl);
+            // add URL to session
+            if (!$session->has($this->parameterName) && $backUrl) {
+                $session->set($this->parameterName, $backUrl);
             }
 
-            // save flash bag URL
-            if ($session->getFlashBag()->has($this->parameterName)) {
-                $urls = $session->getFlashBag()->peek($this->parameterName);
-                $this->flashBagUrl = reset($urls);
+            // save back URL
+            if ($session->has($this->parameterName)) {
+                $url = $session->get($this->parameterName);
+                $this->backUrl = $url;
             }
+        } else {
+            $this->backUrl = $request->get($this->parameterName);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return SessionInterface
+     */
+    protected function getSession(Request $request)
+    {
+        $session = $request->getSession();
+        $session->start();
+        return $session;
     }
 
     /**
@@ -108,48 +114,13 @@ class BackUrl implements AnnotationInterface
      */
     public function process(Request $request, Response $response)
     {
-        if (!$response->isSuccessful() && !$this->force) {
+        if (!self::$isRedirect || !$this->backUrl) {
             return $response;
         }
 
-        if ($this->useFlashBag) {
-            return $this->processFlashBagRedirect($request, $response);
-        } else {
-            return $this->processSimpleRedirect($request, $response);
-        }
-    }
+        $this->clear($request);
 
-    /**
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
-    protected function processFlashBagRedirect(Request $request, Response $response)
-    {
-        /** @var $session Session */
-        $session = $request->getSession();
-
-        // if flash bag was cleared
-        if ($this->flashBagUrl && !$session->getFlashBag()->has($this->parameterName)) {
-            return $this->getRedirectResponse($this->flashBagUrl);
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
-    protected function processSimpleRedirect(Request $request, Response $response)
-    {
-        $backUrl = $request->get($this->parameterName);
-        if (!$backUrl) {
-            return $response;
-        }
-
-        return $this->getRedirectResponse($backUrl);
+        return $this->getRedirectResponse($this->backUrl);
     }
 
     /**
@@ -159,5 +130,27 @@ class BackUrl implements AnnotationInterface
     protected function getRedirectResponse($backUrl)
     {
         return new RedirectResponse($backUrl);
+    }
+
+    /**
+     * @static
+     * @param bool $flag
+     */
+    public static function triggerRedirect($flag = true)
+    {
+        self::$isRedirect = $flag;
+    }
+
+    /**
+     * @param Request $request
+     */
+    protected function clear(Request $request)
+    {
+        if ($this->useSession) {
+            $session = $this->getSession($request);
+            if ($session->has($this->parameterName)) {
+                $session->remove($this->parameterName);
+            }
+        }
     }
 }
