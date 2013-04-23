@@ -148,7 +148,7 @@ class ControllerListenerTest extends \PHPUnit_Framework_TestCase
         );
         $reader->expects($this->once())
             ->method('getClassAnnotations')
-            ->with($this->isInstanceOf('\ReflectionObject'))
+            ->with($this->isInstanceOf('\ReflectionClass'))
             ->will($this->returnValue($controllerAnnotations));
         $reader->expects($this->once())
             ->method('getMethodAnnotations')

@@ -4,6 +4,7 @@ namespace YsTools\BackUrlBundle\EventListener;
 
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Util\ClassUtils;
 use YsTools\BackUrlBundle\Annotation\AnnotationInterface;
 use YsTools\BackUrlBundle\Annotation\StorageInterface;
 
@@ -38,8 +39,13 @@ class ControllerListener
             return;
         }
 
+        // get controller class name
+        $className = class_exists('Doctrine\Common\Util\ClassUtils')
+            ? ClassUtils::getClass($controller[0])
+            : get_class($controller[0]);
+
         // get controller and method
-        $object = new \ReflectionObject($controller[0]);
+        $object = new \ReflectionClass($className);
         $method = $object->getMethod($controller[1]);
 
         // get both class and method annotations
