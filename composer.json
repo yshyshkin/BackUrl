@@ -1,5 +1,5 @@
 {
-    "name": "ys-tools/back-url-bundle",
+    "name": "ystools/back-url-bundle",
     "description": "Symfony 2 Back URL Annotation",
     "keywords": ["annotation","redirect"],
     "type": "symfony-bundle",

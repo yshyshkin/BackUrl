@@ -82,7 +82,7 @@ class BackUrl implements AnnotationInterface
             $backUrl = $request->get($this->parameterName);
 
             // add URL to session
-            if (!$session->has($this->parameterName) && $backUrl) {
+            if ($backUrl) {
                 $session->set($this->parameterName, $backUrl);
             }
 
